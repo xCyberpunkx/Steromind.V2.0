@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Trophy, Search, Star, StarOff, Loader2, Tag as TagIcon, X, Sparkles, Filter } from "lucide-react"
+import { Plus, Trophy, Search, Star, StarOff, Loader2, Tag as TagIcon, X, Filter, MoreVertical, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
@@ -85,13 +91,13 @@ export default function SkillsPage() {
         .select()
         .single()
 
-        if (error) throw error
-        
-        if (userData.user) {
-          await logActivity(userData.user.id)
-        }
-        
-        setSkills([data, ...skills])
+      if (error) throw error
+
+      if (userData.user) {
+        await logActivity(userData.user.id)
+      }
+
+      setSkills([data, ...skills])
       setNewSkill({ name: '', level: 'beginner', tags: [] })
       setIsAddingSkill(false)
       toast.success('Skill added successfully')
@@ -118,11 +124,49 @@ export default function SkillsPage() {
   const allTags = Array.from(new Set(skills.flatMap(s => s.tags || []))).sort()
 
   const filtered = skills.filter(s => {
-    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) || 
+    const matchesSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.tags?.some(t => t.toLowerCase().includes(search.toLowerCase()))
     const matchesTag = !selectedTag || s.tags?.includes(selectedTag)
     return matchesSearch && matchesTag
   })
+
+  const handleDeleteSkill = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('skills')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      setSkills(skills.filter(s => s.id !== id))
+      toast.success('Skill deleted')
+    } catch (error) {
+      console.error('Error deleting skill:', error)
+      toast.error('Failed to delete skill')
+    }
+  }
+
+  const handleUpdateLevel = async (skill: Skill, newLevel: Skill['level']) => {
+    try {
+      const { error } = await supabase
+        .from('skills')
+        .update({ level: newLevel })
+        .eq('id', skill.id)
+
+      if (error) throw error
+
+      setSkills(skills.map(s => s.id === skill.id ? { ...s, level: newLevel } : s))
+      toast.success('Skill level updated')
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user && newLevel === 'advanced') {
+        await logActivity(userData.user.id)
+      }
+    } catch (error) {
+      console.error('Error updating skill level:', error)
+      toast.error('Failed to update skill level')
+    }
+  }
 
   const getLevelProgress = (level: Skill['level']) => {
     switch (level) {
@@ -149,74 +193,70 @@ export default function SkillsPage() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="space-y-10 pb-10"
+      className="space-y-8 pb-10"
     >
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-primary font-bold tracking-wider text-xs uppercase">
-            <Sparkles className="w-3.5 h-3.5" />
-            Expertise
-          </div>
-          <h2 className="text-4xl font-extrabold tracking-tight">Skills Inventory</h2>
-          <p className="text-muted-foreground font-medium text-lg">Your technical toolkit, evolving every day.</p>
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Skills Inventory</h2>
+          <p className="text-gray-500 font-medium">Your technical toolkit, evolving every day.</p>
         </div>
         <Dialog open={isAddingSkill} onOpenChange={setIsAddingSkill}>
           <DialogTrigger asChild>
-            <Button className="h-12 px-6 rounded-2xl gold-gradient text-white font-bold shadow-lg shadow-primary/20 transition-all hover:opacity-90 active:scale-95">
-              <Plus className="w-5 h-5 mr-2" />
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
+              <Plus className="w-4 h-4 mr-2" />
               Add New Skill
             </Button>
           </DialogTrigger>
-          <DialogContent className="apple-card border-none max-w-md p-8">
+          <DialogContent className="bg-white max-w-md p-6">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold tracking-tight">Add Skill</DialogTitle>
-              <DialogDescription className="text-muted-foreground font-medium">
+              <DialogTitle className="text-xl font-bold">Add Skill</DialogTitle>
+              <DialogDescription className="text-gray-500">
                 Enter a technical skill to track your proficiency.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 py-6">
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-bold ml-1">Skill Name</label>
-                <Input 
-                  placeholder="e.g. TypeScript, React, System Design" 
-                  className="h-12 bg-secondary/30 border-border/50 rounded-2xl focus:ring-primary/20 transition-all"
+                <label className="text-sm font-medium text-gray-700">Skill Name</label>
+                <Input
+                  placeholder="e.g. TypeScript, React, System Design"
+                  className="bg-white border-gray-200 focus:border-amber-500 focus:ring-amber-500"
                   value={newSkill.name}
                   onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold ml-1">Current Level</label>
-                <Select 
-                  value={newSkill.level} 
+                <label className="text-sm font-medium text-gray-700">Current Level</label>
+                <Select
+                  value={newSkill.level}
                   onValueChange={(v: Skill['level']) => setNewSkill({ ...newSkill, level: v })}
                 >
-                  <SelectTrigger className="h-12 bg-secondary/30 border-border/50 rounded-2xl focus:ring-primary/20 transition-all">
+                  <SelectTrigger className="bg-white border-gray-200 focus:ring-amber-500">
                     <SelectValue placeholder="Select level" />
                   </SelectTrigger>
-                  <SelectContent className="apple-card border-none rounded-2xl p-2">
-                    <SelectItem value="beginner" className="rounded-xl focus:bg-primary/5 focus:text-primary">Beginner</SelectItem>
-                    <SelectItem value="intermediate" className="rounded-xl focus:bg-primary/5 focus:text-primary">Intermediate</SelectItem>
-                    <SelectItem value="advanced" className="rounded-xl focus:bg-primary/5 focus:text-primary">Advanced</SelectItem>
+                  <SelectContent className="bg-white border-gray-200">
+                    <SelectItem value="beginner" className="focus:bg-amber-50 focus:text-amber-900">Beginner</SelectItem>
+                    <SelectItem value="intermediate" className="focus:bg-amber-50 focus:text-amber-900">Intermediate</SelectItem>
+                    <SelectItem value="advanced" className="focus:bg-amber-50 focus:text-amber-900">Advanced</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-bold ml-1">Tags</label>
+                <label className="text-sm font-medium text-gray-700">Tags</label>
                 <div className="relative group">
-                  <TagIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <Input 
-                    placeholder="Press Enter to add tags" 
-                    className="h-12 bg-secondary/30 border-border/50 pl-12 rounded-2xl focus:ring-primary/20 transition-all"
+                  <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-amber-600 transition-colors" />
+                  <Input
+                    placeholder="Press Enter to add tags"
+                    className="bg-white border-gray-200 pl-10 focus:border-amber-500 focus:ring-amber-500"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleAddTag}
                   />
                 </div>
-                <div className="flex flex-wrap gap-2 mt-3 ml-1">
+                <div className="flex flex-wrap gap-2 mt-2">
                   <AnimatePresence>
                     {newSkill.tags.map(tag => (
                       <motion.div
@@ -225,10 +265,10 @@ export default function SkillsPage() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.8, opacity: 0 }}
                       >
-                        <Badge className="bg-primary/10 text-primary border-none font-bold gap-2 pl-3 pr-2 py-1.5 rounded-xl">
+                        <Badge className="bg-amber-100 text-amber-800 border-none font-medium gap-1 pl-2 pr-1 py-1">
                           {tag}
-                          <button onClick={() => removeTag(tag)} className="hover:bg-primary/20 rounded-lg p-0.5 transition-colors">
-                            <X className="w-3.5 h-3.5" />
+                          <button onClick={() => removeTag(tag)} className="hover:bg-amber-200 rounded p-0.5 transition-colors">
+                            <X className="w-3 h-3" />
                           </button>
                         </Badge>
                       </motion.div>
@@ -237,9 +277,9 @@ export default function SkillsPage() {
                 </div>
               </div>
             </div>
-            <DialogFooter className="gap-3">
-              <Button variant="ghost" onClick={() => setIsAddingSkill(false)} className="h-12 px-6 rounded-2xl font-bold">Cancel</Button>
-              <Button onClick={handleAddSkill} className="h-12 px-8 rounded-2xl gold-gradient text-white font-bold shadow-lg shadow-primary/20 transition-all hover:opacity-90">Create Skill</Button>
+            <DialogFooter className="gap-2">
+              <Button variant="ghost" onClick={() => setIsAddingSkill(false)}>Cancel</Button>
+              <Button onClick={handleAddSkill} className="bg-amber-600 hover:bg-amber-700 text-white">Create Skill</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -247,16 +287,16 @@ export default function SkillsPage() {
 
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         <div className="relative w-full max-w-md group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <Input 
-            placeholder="Search skills or tags..." 
-            className="h-14 bg-card/50 apple-card border-none pl-12 pr-5 rounded-2xl focus:ring-primary/20 transition-all text-base"
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-amber-600 transition-colors" />
+          <Input
+            placeholder="Search skills or tags..."
+            className="h-10 bg-white border-gray-200 pl-10 rounded-md focus:border-amber-500 focus:ring-amber-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-2 mr-2 text-muted-foreground font-bold text-xs uppercase tracking-widest">
+          <div className="flex items-center gap-2 mr-2 text-gray-500 font-medium text-xs uppercase tracking-wider">
             <Filter className="w-3.5 h-3.5" />
             Filter:
           </div>
@@ -264,16 +304,15 @@ export default function SkillsPage() {
             {allTags.map(tag => (
               <motion.div
                 key={tag}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <Badge 
+                <Badge
                   variant={selectedTag === tag ? "default" : "outline"}
-                  className={`cursor-pointer h-9 px-4 rounded-xl border-border/50 font-bold transition-all ${
-                    selectedTag === tag 
-                      ? 'gold-gradient text-white border-none shadow-md shadow-primary/20' 
-                      : 'bg-background/50 backdrop-blur-sm text-muted-foreground hover:bg-secondary hover:text-foreground'
-                  }`}
+                  className={`cursor-pointer px-3 py-1 rounded-md font-medium transition-all ${selectedTag === tag
+                    ? 'bg-amber-600 text-white border-amber-600 hover:bg-amber-700'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
                   onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
                 >
                   {tag}
@@ -282,11 +321,11 @@ export default function SkillsPage() {
             ))}
           </AnimatePresence>
           {selectedTag && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setSelectedTag(null)}
-              className="h-9 px-3 text-destructive font-bold hover:bg-destructive/5 hover:text-destructive transition-colors rounded-xl"
+              className="h-8 px-2 text-red-600 font-medium hover:bg-red-50 hover:text-red-700 transition-colors"
             >
               <X className="w-4 h-4 mr-1" />
               Clear
@@ -296,14 +335,14 @@ export default function SkillsPage() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-6">
-          <Loader2 className="w-12 h-12 animate-spin text-primary" />
-          <p className="text-muted-foreground font-bold animate-pulse uppercase tracking-widest text-xs">Synchronizing Repository...</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
+          <p className="text-gray-500 font-medium text-sm">Synchronizing Repository...</p>
         </div>
       ) : (
-        <motion.div 
+        <motion.div
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           <AnimatePresence mode="popLayout">
             {filtered.map((skill) => (
@@ -315,30 +354,69 @@ export default function SkillsPage() {
                 animate="show"
                 exit={{ opacity: 0, scale: 0.9 }}
               >
-                <Card className="apple-card p-6 group cursor-default h-full flex flex-col justify-between">
+                <Card className="p-6 group cursor-default h-full flex flex-col justify-between bg-white border-gray-200 hover:shadow-md transition-shadow">
                   <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-12 h-12 rounded-2xl gold-gradient flex items-center justify-center shadow-lg shadow-primary/10 group-hover:scale-110 transition-transform duration-300">
-                        <Trophy className="w-6 h-6 text-white" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Trophy className="w-5 h-5 text-gray-600" />
                       </div>
-                      <SkillLevelIndicator level={skill.level} variant="badge" />
+
+                      <div className="flex items-center gap-2">
+                        <SkillLevelIndicator level={skill.level} variant="badge" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-gray-600">
+                              <MoreVertical className="w-3.5 h-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-white border-gray-200 min-w-[200px]">
+                            <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">Update Level</div>
+                            <DropdownMenuItem
+                              className={skill.level === 'beginner' ? 'bg-amber-50 text-amber-900' : ''}
+                              onClick={() => handleUpdateLevel(skill, 'beginner')}
+                            >
+                              Beginner (33%)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className={skill.level === 'intermediate' ? 'bg-amber-50 text-amber-900' : ''}
+                              onClick={() => handleUpdateLevel(skill, 'intermediate')}
+                            >
+                              Intermediate (66%)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className={skill.level === 'advanced' ? 'bg-amber-50 text-amber-900' : ''}
+                              onClick={() => handleUpdateLevel(skill, 'advanced')}
+                            >
+                              Advanced (100%)
+                            </DropdownMenuItem>
+                            <div className="h-px bg-gray-100 my-1" />
+                            <DropdownMenuItem
+                              className="text-red-600 focus:bg-red-50 focus:text-red-700"
+                              onClick={() => handleDeleteSkill(skill.id)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Skill
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
-                    
-                    <h3 className="font-extrabold text-xl tracking-tight mb-3 group-hover:text-primary transition-colors">{skill.name}</h3>
-                    
-                    <div className="flex flex-wrap gap-1.5 mb-8">
+
+                    <h3 className="font-bold text-lg tracking-tight mb-2 text-gray-900 group-hover:text-amber-600 transition-colors">{skill.name}</h3>
+
+                    <div className="flex flex-wrap gap-1.5 mb-6">
                       {skill.tags?.map(tag => (
-                        <span key={tag} className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/30 px-2 py-0.5 rounded-lg border border-border/10">#{tag}</span>
+                        <span key={tag} className="text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-gray-50 px-2 py-0.5 rounded border border-gray-100">#{tag}</span>
                       ))}
                     </div>
                   </div>
 
-                  <div className="space-y-4 pt-4 border-t border-border/10">
+                  <div className="space-y-3 pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">
                       <SkillLevelIndicator level={skill.level} showLabel variant="bar" />
-                      <span className="text-primary font-black text-sm">{getLevelProgress(skill.level)}%</span>
+                      <span className="text-amber-600 font-bold text-sm">{getLevelProgress(skill.level)}%</span>
                     </div>
-                    <Progress value={getLevelProgress(skill.level)} className="h-2 bg-secondary/30" />
+                    <Progress value={getLevelProgress(skill.level)} className="h-1.5 bg-gray-100" />
                   </div>
                 </Card>
               </motion.div>
@@ -348,16 +426,16 @@ export default function SkillsPage() {
       )}
 
       {!loading && filtered.length === 0 && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-32 text-center opacity-50"
+          className="flex flex-col items-center justify-center py-20 text-center text-gray-500"
         >
-          <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center mb-6">
-            <Search className="w-10 h-10" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+            <Search className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-xl font-bold">No skills matched your search</h3>
-          <p className="font-medium">Try a different keyword or filter.</p>
+          <h3 className="text-lg font-bold text-gray-900">No skills matched</h3>
+          <p>Try a different keyword or filter.</p>
         </motion.div>
       )}
     </motion.div>

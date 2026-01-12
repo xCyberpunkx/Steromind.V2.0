@@ -124,22 +124,6 @@
   .glass {
     @apply bg-background/60 backdrop-blur-2xl border-border/40 shadow-sm;
   }
-  .apple-card {
-    @apply bg-card/40 backdrop-blur-xl border border-border/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.06)] hover:border-primary/20 transition-all duration-500 ease-out rounded-3xl;
-  }
-  .gold-gradient {
-    background: linear-gradient(135deg, oklch(0.9 0.05 85), oklch(0.75 0.1 85), oklch(0.65 0.12 85));
-  }
-  .gold-text {
-    @apply text-transparent bg-clip-text font-bold;
-    background-image: linear-gradient(135deg, oklch(0.9 0.05 85), oklch(0.75 0.1 85));
-  }
-  .apple-button {
-    @apply h-12 px-6 rounded-2xl font-semibold transition-all duration-300 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
-  }
-  .apple-input {
-    @apply h-12 bg-secondary/40 border-border/40 rounded-2xl px-5 focus:bg-background focus:ring-4 focus:ring-primary/10 transition-all duration-300;
-  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {

@@ -1,19 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { 
-  BookOpen, 
-  Search, 
-  Filter, 
-  Plus, 
-  ExternalLink, 
-  Clock, 
-  CheckCircle2, 
+import {
+  BookOpen,
+  Search,
+  Filter,
+  Plus,
+  ExternalLink,
+  Clock,
+  CheckCircle2,
   AlertCircle,
   MoreVertical,
   Loader2
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { supabase } from "@/lib/supabase"
@@ -60,43 +61,42 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-8 pb-16">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight">My Courses</h1>
-          <p className="text-muted-foreground font-medium">Track your learning progress and upcoming subjects.</p>
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">My Courses</h1>
+          <p className="text-gray-500">Track your learning progress and upcoming subjects.</p>
         </div>
-        <button className="apple-button gold-gradient text-white flex items-center justify-center gap-2 px-6">
-          <Plus className="w-4 h-4" />
-          <span className="font-bold">Add Course</span>
-        </button>
+        <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Course
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
         {['all', 'in-progress', 'completed', 'backlog'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap border ${
-              filter === f 
-                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
-                : 'bg-card border-border/40 text-muted-foreground hover:border-primary/50'
-            }`}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap border ${filter === f
+              ? 'bg-amber-100 text-amber-700 border-amber-200'
+              : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
           >
-            {f.replace('-', ' ')}
+            {f.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </button>
         ))}
       </div>
 
       {/* Courses Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-40">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
         </div>
       ) : filteredCourses.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <AnimatePresence mode="popLayout">
             {filteredCourses.map((course, i) => (
               <motion.div
@@ -106,47 +106,40 @@ export default function CoursesPage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card className="apple-card p-8 group relative overflow-hidden h-full flex flex-col">
-                  <div className="flex items-start justify-between mb-8">
-                    <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-2xl gold-gradient flex items-center justify-center shadow-xl shadow-primary/10">
-                        <BookOpen className="w-7 h-7 text-white" />
+                <Card className="p-6 h-full flex flex-col bg-white border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <BookOpen className="w-6 h-6 text-gray-600" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-black group-hover:text-primary transition-colors line-clamp-1">{course.title}</h3>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">{course.platform}</p>
+                        <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{course.title}</h3>
+                        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">{course.platform}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="px-3 py-1 rounded-full border-primary/20 bg-primary/5 text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-1.5">
+                    <Badge variant="outline" className="px-2.5 py-0.5 rounded-full border-gray-200 bg-gray-50 text-xs font-medium text-gray-600 flex items-center gap-1.5 capitalize">
                       {getStatusIcon(course.status)}
                       {course.status.replace('-', ' ')}
                     </Badge>
                   </div>
 
                   <div className="flex-1 space-y-6">
-                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                    <p className="text-sm text-gray-600 leading-relaxed line-clamp-3">
                       {course.summary || "No description provided for this course yet."}
                     </p>
 
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Completion Progress</span>
-                        <span className="text-sm font-black text-primary">{course.completion_percentage}%</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-gray-500">Progress</span>
+                        <span className="font-bold text-amber-600">{course.completion_percentage}%</span>
                       </div>
-                      <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${course.completion_percentage}%` }}
-                          transition={{ duration: 1, delay: 0.5 }}
-                          className="h-full gold-gradient shadow-[0_0_10px_rgba(200,160,80,0.3)]"
-                        />
-                      </div>
+                      <Progress value={course.completion_percentage} className="h-2 bg-gray-100" />
                     </div>
 
                     {course.tags && course.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {course.tags.map((tag: string) => (
-                          <span key={tag} className="px-3 py-1 rounded-lg bg-secondary/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground border border-border/20">
+                          <span key={tag} className="px-2.5 py-1 rounded-md bg-gray-50 text-xs font-medium text-gray-600 border border-gray-100">
                             {tag}
                           </span>
                         ))}
@@ -154,11 +147,10 @@ export default function CoursesPage() {
                     )}
                   </div>
 
-                  <div className="mt-8 pt-6 border-t border-border/30 flex items-center justify-between">
-                    <p className="text-[10px] font-bold text-muted-foreground">Added {new Date(course.created_at).toLocaleDateString()}</p>
-                    <button className="text-primary hover:opacity-70 transition-opacity flex items-center gap-1.5">
-                      <span className="text-[10px] font-black uppercase tracking-widest">Continue</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                  <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <p className="text-xs text-gray-400">Added {new Date(course.created_at).toLocaleDateString()}</p>
+                    <button className="text-amber-600 hover:text-amber-700 font-medium text-sm flex items-center gap-1">
+                      Continue <ExternalLink className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </Card>
@@ -167,10 +159,10 @@ export default function CoursesPage() {
           </AnimatePresence>
         </div>
       ) : (
-        <div className="text-center py-40 bg-card/30 rounded-[2.5rem] border-2 border-dashed border-border/40">
-          <BookOpen className="w-16 h-16 mx-auto text-muted-foreground/30 mb-6" />
-          <h3 className="text-xl font-black mb-2">No courses found</h3>
-          <p className="text-muted-foreground font-medium">Try changing your filter or add a new course.</p>
+        <div className="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+          <BookOpen className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No courses found</h3>
+          <p className="text-gray-500">Try changing your filter or add a new course.</p>
         </div>
       )}
     </div>

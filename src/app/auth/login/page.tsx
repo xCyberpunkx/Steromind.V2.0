@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
-import { LogIn, Loader2, Mail, Lock, ArrowRight, Brain, Sparkles } from "lucide-react"
+import { Loader2, Mail, Lock, ArrowRight, Brain } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { useForm } from "react-hook-form"
@@ -48,8 +48,8 @@ export default function LoginPage() {
 
       if (error) throw error
 
-      toast.success("Welcome back to Stero Mind!")
-      router.push("/")
+      toast.success("Welcome back!")
+      router.push("/dashboard")
       router.refresh()
     } catch (error: any) {
       toast.error(error.message || "Failed to login")
@@ -59,92 +59,82 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-6 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -mr-40 -mt-40" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -ml-20 -mb-20" />
-
-      <motion.div 
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-6">
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-[440px] relative z-10"
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <div className="text-center mb-12">
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="w-20 h-20 rounded-[2rem] gold-gradient flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-primary/20"
-          >
-            <Brain className="w-10 h-10 text-white" />
-          </motion.div>
-          <h1 className="text-5xl font-black tracking-tighter mb-4">Stero Mind</h1>
-          <div className="flex items-center justify-center gap-2 text-muted-foreground font-semibold">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>Resynchronize your consciousness</span>
-          </div>
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center">
+              <Brain className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-bold text-gray-900">Stero Mind</span>
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Welcome back</h1>
+          <p className="text-gray-500 mt-2">Enter your details to access your account</p>
         </div>
 
-        <Card className="p-10 apple-card border-none relative overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.06)]">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-3">
-              <label className="text-xs font-black uppercase tracking-widest ml-1 text-muted-foreground">Neural Identity</label>
-              <div className="relative group">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+        <Card className="p-8 border-gray-200 shadow-sm bg-white">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   {...register("email")}
                   type="email"
                   placeholder="name@example.com"
-                  className={`h-14 bg-secondary/30 border-border/40 pl-14 rounded-[1.25rem] focus:ring-primary/10 focus:bg-background transition-all text-base ${errors.email ? "border-destructive focus:ring-destructive/5" : ""}`}
+                  className={`pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors ${errors.email ? "border-red-500 focus:ring-red-500" : ""}`}
                   disabled={loading}
                 />
               </div>
               {errors.email && (
-                <p className="text-xs text-destructive font-bold mt-2 ml-1">{errors.email.message}</p>
+                <p className="text-sm text-red-500 font-medium">{errors.email.message}</p>
               )}
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between ml-1">
-                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Access Key</label>
-                <Link href="#" className="text-xs text-primary hover:opacity-70 font-black uppercase tracking-widest">Lost Key?</Link>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">Password</label>
+                <Link href="#" className="text-sm font-medium text-amber-600 hover:text-amber-700">Forgot password?</Link>
               </div>
-              <div className="relative group">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   {...register("password")}
                   type="password"
                   placeholder="••••••••"
-                  className={`h-14 bg-secondary/30 border-border/40 pl-14 rounded-[1.25rem] focus:ring-primary/10 focus:bg-background transition-all text-base ${errors.password ? "border-destructive focus:ring-destructive/5" : ""}`}
+                  className={`pl-10 h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors ${errors.password ? "border-red-500 focus:ring-red-500" : ""}`}
                   disabled={loading}
                 />
               </div>
               {errors.password && (
-                <p className="text-xs text-destructive font-bold mt-2 ml-1">{errors.password.message}</p>
+                <p className="text-sm text-red-500 font-medium">{errors.password.message}</p>
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full gold-gradient hover:opacity-90 h-14 rounded-[1.25rem] text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50"
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-white h-11 font-medium transition-all"
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <span className="flex items-center justify-center gap-3">
-                  Initiate Link <ArrowRight className="w-5 h-5" />
+                <span className="flex items-center justify-center gap-2">
+                  Sign In <ArrowRight className="w-4 h-4" />
                 </span>
               )}
             </Button>
           </form>
 
-          <div className="mt-10 pt-10 border-t border-border/40 text-center">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">New to the network?</p>
-            <Link href="/auth/signup" className="inline-flex items-center gap-2 text-primary hover:opacity-70 font-black uppercase tracking-[0.2em] text-xs transition-all">
-              Create Neural Node
-              <ArrowRight className="w-4 h-4" />
+          <div className="mt-8 text-center text-sm">
+            <span className="text-gray-500">Don't have an account? </span>
+            <Link href="/auth/signup" className="font-medium text-amber-600 hover:text-amber-700">
+              Create account
             </Link>
           </div>
         </Card>

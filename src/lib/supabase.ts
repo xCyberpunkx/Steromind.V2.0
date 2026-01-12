@@ -99,3 +99,15 @@ export type ProgressLog = {
   value: number
   created_at: string
 }
+
+export type BacklogItem = {
+  id: string
+  user_id: string
+  title: string
+  category: 'course' | 'skill' | 'project' | 'other'
+  priority: 'high' | 'medium' | 'low'
+  url: string | null
+  description: string | null
+  status: 'pending' | 'in-progress' | 'completed' | 'archived'
+  created_at: string
+}
