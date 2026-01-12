@@ -13,7 +13,10 @@ import {
   File, 
   Loader2,
   Library,
-  MoreVertical
+  MoreVertical,
+  Sparkles,
+  Zap,
+  Bookmark
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -36,6 +39,7 @@ import {
 } from "@/components/ui/dialog"
 import { supabase, LearningResource } from "@/lib/supabase"
 import { toast } from "sonner"
+import { motion, AnimatePresence } from "framer-motion"
 
 const RESOURCE_TYPES = [
   { value: 'all', label: 'All Resources', icon: Library },
@@ -99,7 +103,7 @@ export default function ResourcesPage() {
       setResources([data, ...resources])
       setNewResource({ title: '', url: '', type: 'link' })
       setIsAdding(false)
-      toast.success('Resource added successfully')
+      toast.success('Knowledge fragment secured')
     } catch (error) {
       console.error('Error adding resource:', error)
       toast.error('Failed to add resource')
@@ -115,7 +119,7 @@ export default function ResourcesPage() {
 
       if (error) throw error
       setResources(resources.filter(r => r.id !== id))
-      toast.success('Resource deleted')
+      toast.success('Resource purged')
     } catch (error) {
       console.error('Error deleting resource:', error)
       toast.error('Failed to delete resource')
@@ -130,51 +134,58 @@ export default function ResourcesPage() {
   })
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Resources</h2>
-          <p className="text-zinc-400">Your curated library of learning materials.</p>
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-[10px] uppercase tracking-[0.2em]">
+            <Library className="w-3.5 h-3.5" />
+            Information Repository
+          </div>
+          <h1 className="text-5xl font-black tracking-tight">Cognitive <span className="gold-text italic">Assets</span></h1>
+          <p className="text-muted-foreground font-medium max-w-md">
+            Your high-fidelity library of learning materials. Curate the sources that accelerate your evolution.
+          </p>
         </div>
+        
         <Dialog open={isAdding} onOpenChange={setIsAdding}>
           <DialogTrigger asChild>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Resource
+            <Button className="gold-gradient text-white h-14 px-8 rounded-2xl font-black shadow-2xl shadow-primary/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-3">
+              <Plus className="w-5 h-5" />
+              Secure Asset
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+          <DialogContent className="bg-zinc-900/95 border-zinc-800 text-white backdrop-blur-xl sm:max-w-md rounded-[2.5rem]">
             <DialogHeader>
-              <DialogTitle>Add New Resource</DialogTitle>
-              <DialogDescription className="text-zinc-400">
-                Save a link, video, or document for later reference.
+              <DialogTitle className="text-2xl font-black">Secure Asset</DialogTitle>
+              <DialogDescription className="text-zinc-400 font-medium">
+                Add a new intelligence stream to your repository.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-6 py-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Resource Title</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary">Asset Title</label>
                 <Input 
-                  placeholder="e.g. React Documentation" 
-                  className="bg-zinc-950 border-zinc-800"
+                  placeholder="e.g. LLM Reasoning Patterns" 
+                  className="bg-zinc-950 border-zinc-800 h-12 rounded-xl focus:ring-primary"
                   value={newResource.title}
                   onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Resource URL</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary">Source URL</label>
                 <Input 
                   placeholder="https://..." 
-                  className="bg-zinc-950 border-zinc-800"
+                  className="bg-zinc-950 border-zinc-800 h-12 rounded-xl focus:ring-primary"
                   value={newResource.url}
                   onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Type</label>
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary">Classification</label>
                 <select 
                   value={newResource.type}
                   onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
-                  className="w-full h-10 bg-zinc-950 border border-zinc-800 rounded-md px-3 focus:ring-1 focus:ring-blue-500 outline-none"
+                  className="w-full h-12 bg-zinc-950 border border-zinc-800 rounded-xl px-4 focus:ring-2 focus:ring-primary outline-none text-sm font-medium"
                 >
                   {RESOURCE_TYPES.filter(t => t.value !== 'all').map(type => (
                     <option key={type.value} value={type.value}>{type.label}</option>
@@ -183,97 +194,119 @@ export default function ResourcesPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setIsAdding(false)} className="text-zinc-400 hover:text-white hover:bg-zinc-800">Cancel</Button>
-              <Button onClick={handleAddResource} className="bg-blue-600 hover:bg-blue-700">Add to Library</Button>
+              <Button variant="ghost" onClick={() => setIsAdding(false)} className="text-zinc-400 font-bold">Abort</Button>
+              <Button onClick={handleAddResource} className="gold-gradient text-white h-12 px-8 rounded-xl font-black shadow-lg shadow-primary/20">Secure Asset</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+      <div className="flex flex-col lg:flex-row items-center gap-6">
+        <div className="relative flex-1 w-full group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-primary transition-colors" />
           <Input 
-            placeholder="Search your library..." 
-            className="bg-zinc-900 border-zinc-800 pl-10"
+            placeholder="Search cognitive streams..." 
+            className="bg-secondary/10 border-border/40 pl-11 h-14 rounded-2xl focus:ring-primary font-medium text-base"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
+        <div className="flex items-center gap-2 bg-secondary/10 p-1 rounded-2xl border border-border/40 w-full lg:w-auto overflow-x-auto custom-scrollbar">
           {RESOURCE_TYPES.map((type) => (
-            <Button
+            <button
               key={type.value}
-              variant={filter === type.value ? "secondary" : "outline"}
-              size="sm"
               onClick={() => setFilter(type.value)}
-              className={filter === type.value ? "bg-blue-600/20 text-blue-400 border-blue-600/30" : "border-zinc-800 bg-zinc-900"}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                filter === type.value 
+                ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+              }`}
             >
-              <type.icon className="w-4 h-4 mr-2" />
+              <type.icon className="w-3.5 h-3.5" />
               {type.label}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-          <p className="text-zinc-400">Organizing your library...</p>
+        <div className="flex flex-col items-center justify-center py-32 gap-6 opacity-50">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <p className="text-sm font-black uppercase tracking-[0.3em] text-primary">Scanning Records...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-          <Library className="w-12 h-12 text-zinc-800 mb-4" />
-          <p className="text-zinc-400 text-lg font-medium">No resources found</p>
-          <p className="text-zinc-500 text-sm">Try a different search or add a new resource.</p>
-        </div>
+        <Card className="p-24 apple-card border-dashed border-border/40 bg-transparent flex flex-col items-center justify-center text-center">
+          <div className="w-20 h-20 rounded-full bg-secondary/20 flex items-center justify-center mb-8">
+            <Bookmark className="w-10 h-10 text-muted-foreground" />
+          </div>
+          <h3 className="text-2xl font-black tracking-tight">Repository Empty</h3>
+          <p className="text-muted-foreground font-medium max-w-xs mt-4">
+            No cognitive assets found matching your current filters. Populate your library.
+          </p>
+          <Button variant="outline" className="mt-10 border-border/40 rounded-xl px-10 h-14 font-black uppercase tracking-widest text-[10px]" onClick={() => setIsAdding(true)}>
+            Initialize Asset Record
+          </Button>
+        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((resource) => {
-            const TypeIcon = RESOURCE_TYPES.find(t => t.value === resource.resource_type)?.icon || LinkIcon
-            return (
-              <Card key={resource.id} className="bg-zinc-900 border-zinc-800 group hover:border-zinc-700 transition-all duration-300 overflow-hidden">
-                <div className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-10 h-10 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center">
-                      <TypeIcon className="w-5 h-5 text-blue-500" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((resource) => {
+              const TypeIcon = RESOURCE_TYPES.find(t => t.value === resource.resource_type)?.icon || LinkIcon
+              return (
+                <motion.div
+                  key={resource.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Card className="apple-card p-8 group relative overflow-hidden h-full flex flex-col hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 border-border/40 hover:border-primary/30">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors" />
+                    
+                    <div className="flex items-start justify-between mb-8">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center group-hover:border-primary/50 transition-colors">
+                        <TypeIcon className="w-5 h-5 text-primary" />
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-zinc-500 hover:text-white hover:bg-zinc-800">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white rounded-xl shadow-2xl">
+                          <DropdownMenuItem className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer font-bold gap-2 p-3" onClick={() => handleDeleteResource(resource.id)}>
+                            <Trash2 className="w-4 h-4" />
+                            Purge Record
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-white">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800">
-                        <DropdownMenuItem className="text-red-500 focus:text-red-400 focus:bg-red-500/10 cursor-pointer" onClick={() => handleDeleteResource(resource.id)}>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  
-                  <h3 className="font-bold text-lg mb-1 truncate group-hover:text-blue-400 transition-colors">
-                    {resource.title}
-                  </h3>
-                  <p className="text-xs text-zinc-500 mb-4 truncate font-mono">
-                    {resource.url}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mt-auto">
-                    <Badge variant="outline" className="bg-zinc-950 border-zinc-800 text-zinc-400 text-[10px] capitalize">
-                      {resource.resource_type}
-                    </Badge>
-                    <Button size="sm" variant="ghost" className="h-8 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10" asChild>
-                      <a href={resource.url} target="_blank" rel="noopener noreferrer">
-                        Open <ExternalLink className="w-3 h-3 ml-2" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
+                    
+                    <div className="space-y-2 mb-8 flex-1">
+                      <h3 className="text-xl font-black tracking-tight leading-tight group-hover:text-primary transition-colors">
+                        {resource.title}
+                      </h3>
+                      <p className="text-[10px] font-mono text-zinc-500 truncate opacity-60">
+                        {resource.url}
+                      </p>
+                    </div>
+                    
+                    <div className="pt-6 border-t border-border/20 flex items-center justify-between">
+                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">
+                        {resource.resource_type}
+                      </Badge>
+                      <Button variant="ghost" size="sm" className="h-9 rounded-xl text-primary font-black uppercase tracking-widest text-[10px] hover:bg-primary/5 gap-2" asChild>
+                        <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                          Open Stream <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </AnimatePresence>
         </div>
       )}
     </div>
