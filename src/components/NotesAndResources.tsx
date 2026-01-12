@@ -199,7 +199,7 @@ export function NotesAndResources({
     <div className="flex flex-col h-[600px]">
       <div className="px-6 pt-6 pb-2 border-b border-zinc-800">
         <h2 className="text-xl font-bold flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-500" />
+          <FileText className="w-5 h-5 text-primary" />
           Manage: {title}
         </h2>
         <p className="text-sm text-zinc-400 mt-1">
@@ -210,12 +210,12 @@ export function NotesAndResources({
       <Tabs defaultValue="notes" className="flex-1 flex flex-col">
         <div className="px-6 pt-4">
             <TabsList className="bg-zinc-950 border border-zinc-800 p-1">
-              <TabsTrigger value="notes" className="data-[state=active]:bg-zinc-800">Notes</TabsTrigger>
-              <TabsTrigger value="summary" className="data-[state=active]:bg-zinc-800">Summary</TabsTrigger>
-              <TabsTrigger value="tags" className="data-[state=active]:bg-zinc-800">Tags</TabsTrigger>
-              <TabsTrigger value="resources" className="data-[state=active]:bg-zinc-800">Resources</TabsTrigger>
+              <TabsTrigger value="notes" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-primary">Notes</TabsTrigger>
+              <TabsTrigger value="summary" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-primary">Summary</TabsTrigger>
+              <TabsTrigger value="tags" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-primary">Tags</TabsTrigger>
+              <TabsTrigger value="resources" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-primary">Resources</TabsTrigger>
               {entityType === 'project' && (
-                <TabsTrigger value="screenshot" className="data-[state=active]:bg-zinc-800">Screenshot</TabsTrigger>
+                <TabsTrigger value="screenshot" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-primary">Screenshot</TabsTrigger>
               )}
             </TabsList>
           </div>
@@ -227,7 +227,7 @@ export function NotesAndResources({
                 value={notes} 
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Jot down quick thoughts, shortcuts, or key concepts..."
-                className="flex-1 min-h-0 bg-zinc-950 border-zinc-800 focus:ring-blue-500 resize-none"
+                className="flex-1 min-h-0 bg-zinc-950 border-zinc-800 focus:ring-primary resize-none"
               />
             </div>
           </TabsContent>
@@ -239,7 +239,7 @@ export function NotesAndResources({
                 value={summary} 
                 onChange={(e) => setSummary(e.target.value)}
                 placeholder="What are the biggest takeaways from this? Explain it to yourself in 3 sentences."
-                className="flex-1 min-h-0 bg-zinc-950 border-zinc-800 focus:ring-blue-500 resize-none"
+                className="flex-1 min-h-0 bg-zinc-950 border-zinc-800 focus:ring-primary resize-none"
               />
             </div>
           </TabsContent>
@@ -252,7 +252,7 @@ export function NotesAndResources({
                   <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
                   <Input 
                     placeholder="Type a tag and press Enter (e.g. Web, C++, Security)" 
-                    className="bg-zinc-950 border-zinc-800 pl-10"
+                    className="bg-zinc-950 border-zinc-800 pl-10 focus-visible:ring-primary"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleAddTag}
@@ -267,11 +267,11 @@ export function NotesAndResources({
                     <p className="text-sm text-zinc-500 italic">No tags added yet.</p>
                   ) : (
                     tags.map(tag => (
-                      <Badge key={tag} className="bg-blue-600/10 text-blue-400 border-blue-600/20 py-1 pl-3 pr-1 gap-1 group/tag">
+                      <Badge key={tag} className="bg-primary/10 text-primary border-primary/20 py-1 pl-3 pr-1 gap-1 group/tag">
                         {tag}
                         <button 
                           onClick={() => removeTag(tag)}
-                          className="hover:bg-blue-600/20 rounded-full p-0.5 transition-colors"
+                          className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -288,7 +288,7 @@ export function NotesAndResources({
               <label className="text-sm font-medium text-zinc-400">Project Screenshot</label>
               <div 
                 onClick={() => fileInputRef.current?.click()}
-                className="group relative flex-1 border-2 border-dashed border-zinc-800 rounded-lg bg-zinc-950 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 hover:bg-blue-500/5 transition-all overflow-hidden"
+                className="group relative flex-1 border-2 border-dashed border-zinc-800 rounded-lg bg-zinc-950 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all overflow-hidden"
               >
                 {imageUrl ? (
                   <>
@@ -301,7 +301,7 @@ export function NotesAndResources({
                     </div>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center gap-2 text-zinc-500 group-hover:text-blue-400">
+                  <div className="flex flex-col items-center gap-2 text-zinc-500 group-hover:text-primary">
                     {uploading ? (
                       <Loader2 className="w-8 h-8 animate-spin" />
                     ) : (
@@ -328,7 +328,7 @@ export function NotesAndResources({
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-zinc-400">Learning Materials</label>
             {!addingResource && (
-              <Button size="sm" variant="outline" className="h-8 border-zinc-800" onClick={() => setAddingResource(true)}>
+              <Button size="sm" variant="outline" className="h-8 border-zinc-800 hover:text-primary hover:border-primary/50" onClick={() => setAddingResource(true)}>
                 <Plus className="w-4 h-4 mr-1" />
                 Add
               </Button>
@@ -344,7 +344,7 @@ export function NotesAndResources({
                     placeholder="E.g. Official Docs" 
                     value={newResource.title}
                     onChange={(e) => setNewResource({ ...newResource, title: e.target.value })}
-                    className="h-8 text-sm bg-zinc-900 border-zinc-800"
+                    className="h-8 text-sm bg-zinc-900 border-zinc-800 focus-visible:ring-primary"
                   />
                 </div>
                 <div className="space-y-1">
@@ -352,7 +352,7 @@ export function NotesAndResources({
                   <select 
                     value={newResource.type}
                     onChange={(e) => setNewResource({ ...newResource, type: e.target.value })}
-                    className="w-full h-8 text-sm bg-zinc-900 border-zinc-800 rounded-md px-2 focus:ring-1 focus:ring-blue-500 outline-none"
+                    className="w-full h-8 text-sm bg-zinc-900 border-zinc-800 rounded-md px-2 focus:ring-1 focus:ring-primary outline-none"
                   >
                     {RESOURCE_TYPES.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
@@ -366,19 +366,19 @@ export function NotesAndResources({
                   placeholder="https://..." 
                   value={newResource.url}
                   onChange={(e) => setNewResource({ ...newResource, url: e.target.value })}
-                  className="h-8 text-sm bg-zinc-900 border-zinc-800"
+                  className="h-8 text-sm bg-zinc-900 border-zinc-800 focus-visible:ring-primary"
                 />
               </div>
               <div className="flex gap-2 justify-end">
                 <Button size="sm" variant="ghost" onClick={() => setAddingResource(false)}>Cancel</Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleAddResource}>Save Resource</Button>
+                <Button size="sm" className="gold-gradient text-white" onClick={handleAddResource}>Save Resource</Button>
               </div>
             </div>
           )}
 
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
             </div>
           ) : resources.length === 0 && !addingResource ? (
             <div className="text-center py-10 border border-dashed border-zinc-800 rounded-lg">
@@ -389,7 +389,7 @@ export function NotesAndResources({
               {resources.map((resource) => {
                 const TypeIcon = RESOURCE_TYPES.find(t => t.value === resource.resource_type)?.icon || LinkIcon
                 return (
-                  <div key={resource.id} className="group flex items-center justify-between p-3 rounded-lg bg-zinc-950/50 border border-zinc-800 hover:border-zinc-700 transition-all">
+                  <div key={resource.id} className="group flex items-center justify-between p-3 rounded-lg bg-zinc-950/50 border border-zinc-800 hover:border-primary/30 transition-all">
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className="w-8 h-8 rounded bg-zinc-900 flex items-center justify-center flex-shrink-0">
                         <TypeIcon className="w-4 h-4 text-zinc-400" />
@@ -400,7 +400,7 @@ export function NotesAndResources({
                           href={resource.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-[10px] text-blue-500 hover:underline flex items-center gap-1 truncate"
+                          className="text-[10px] text-primary hover:underline flex items-center gap-1 truncate"
                         >
                           {resource.url} <ExternalLink className="w-2 h-2" />
                         </a>
@@ -424,7 +424,7 @@ export function NotesAndResources({
 
       <div className="p-6 border-t border-zinc-800 mt-auto flex gap-2 justify-end bg-zinc-900/50">
         <Button 
-          className="bg-blue-600 hover:bg-blue-700"
+          className="gold-gradient text-white"
           onClick={() => onSave(notes, summary, tags, imageUrl)}
         >
           Save All Changes
