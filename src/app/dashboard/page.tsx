@@ -94,8 +94,6 @@ export default function Dashboard() {
           name: new Date(log.date).toLocaleDateString(undefined, { weekday: 'short' }),
           hours: log.value
         })))
-        // Simple streak logic: count consecutive days including today/yesterday
-        // For now, if no logs, streak is 0.
         setStreak(logs.length) 
       } else {
         setProgressData([])
@@ -142,13 +140,13 @@ export default function Dashboard() {
           <div className="space-y-4 max-w-2xl text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-xs uppercase tracking-[0.2em]">
               <Sparkles className="w-3.5 h-3.5" />
-              Intelligence Hub
+              My Dashboard
             </div>
             <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-[1.1]">
-              Elevate your <span className="gold-text italic">Stero Mind</span>
+              Track Your <span className="gold-text italic">Growth</span>
             </h1>
             <p className="text-lg text-muted-foreground font-medium max-w-lg">
-              Your cognitive growth trajectory is initializing. Synthesize knowledge and track every milestone.
+              Monitor your progress, manage your projects, and achieve your goals.
             </p>
           </div>
           
@@ -160,8 +158,8 @@ export default function Dashboard() {
             </div>
             <div className="p-6 apple-card bg-white/40 text-center space-y-2 min-w-[140px]">
               <Star className="w-6 h-6 text-primary mx-auto" />
-              <p className="text-3xl font-black">{streak > 10 ? 'Elite' : 'Novice'}</p>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Rank</p>
+              <p className="text-3xl font-black">{streak > 10 ? 'Pro' : 'Starter'}</p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Status</p>
             </div>
           </div>
         </div>
@@ -196,11 +194,11 @@ export default function Dashboard() {
           <Card className="p-10 apple-card h-full relative overflow-hidden">
             <div className="flex items-center justify-between mb-12">
               <div>
-                <h3 className="text-2xl font-bold tracking-tight">Cognitive Intensity</h3>
-                <p className="text-muted-foreground font-medium">Focus duration across your mind nodes</p>
+                <h3 className="text-2xl font-bold tracking-tight">Study Activity</h3>
+                <p className="text-muted-foreground font-medium">Hours spent learning over the past week</p>
               </div>
               <div className="flex items-center gap-4">
-                <Badge variant="outline" className="h-10 px-4 rounded-xl border-border/50 bg-secondary/10 text-xs font-bold uppercase tracking-widest">Real-time Sync</Badge>
+                <Badge variant="outline" className="h-10 px-4 rounded-xl border-border/50 bg-secondary/10 text-xs font-bold uppercase tracking-widest">Updated Live</Badge>
               </div>
             </div>
             <div className="h-[380px] w-full">
@@ -230,7 +228,7 @@ export default function Dashboard() {
                       fontWeight={800}
                       tickLine={false} 
                       axisLine={false}
-                      tickFormatter={(value) => `${value}H`}
+                      tickFormatter={(value) => `${value}h`}
                       dx={-15}
                     />
                     <Tooltip 
@@ -259,8 +257,8 @@ export default function Dashboard() {
                 <div className="flex flex-col items-center justify-center h-full text-center space-y-6 opacity-30">
                   <Activity className="w-16 h-16" />
                   <div>
-                    <p className="font-black text-xl tracking-tight uppercase">Awaiting Input</p>
-                    <p className="text-sm font-bold">Log your first activity to visualize growth.</p>
+                    <p className="font-black text-xl tracking-tight uppercase">No Activity Yet</p>
+                    <p className="text-sm font-bold">Log your progress to see it here.</p>
                   </div>
                 </div>
               )}
@@ -273,7 +271,7 @@ export default function Dashboard() {
           <Card className="p-10 apple-card h-full flex flex-col relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
             <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-bold tracking-tight">Focus Targets</h3>
+              <h3 className="text-2xl font-bold tracking-tight">My Goals</h3>
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                 <Target className="w-5 h-5 text-primary" />
               </div>
@@ -286,7 +284,7 @@ export default function Dashboard() {
                   <div key={i} className="space-y-3 group cursor-pointer">
                     <div className="flex items-center justify-between">
                       <span className="font-bold text-sm tracking-tight group-hover:text-primary transition-colors">{goal.title}</span>
-                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">{goal.deadline ? new Date(goal.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Future'}</span>
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.1em]">{goal.deadline ? new Date(goal.deadline).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Soon'}</span>
                     </div>
                     <div className="h-1.5 w-full bg-secondary/30 rounded-full overflow-hidden">
                       <motion.div 
@@ -303,13 +301,13 @@ export default function Dashboard() {
                   <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center mb-6">
                     <Target className="w-10 h-10" />
                   </div>
-                  <p className="font-bold text-lg">Empty focus field</p>
-                  <p className="text-sm font-medium">Define your next milestone.</p>
+                  <p className="font-bold text-lg">No active goals</p>
+                  <p className="text-sm font-medium">Set a new goal to get started.</p>
                 </div>
               )}
             </div>
             <Link href="/goals" className="mt-12 apple-button bg-secondary/40 hover:bg-secondary/60 flex items-center justify-center gap-3 group border border-border/30">
-              <span className="text-sm font-black uppercase tracking-widest">Expansion Protocol</span>
+              <span className="text-sm font-black uppercase tracking-widest">View All Goals</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Card>
@@ -321,8 +319,8 @@ export default function Dashboard() {
         <motion.div variants={itemVariants}>
           <Card className="p-10 apple-card relative overflow-hidden">
             <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-bold tracking-tight">Active Nodes</h3>
-              <Link href="/courses" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:opacity-70 transition-opacity">Access All</Link>
+              <h3 className="text-2xl font-bold tracking-tight">Recent Courses</h3>
+              <Link href="/courses" className="text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:opacity-70 transition-opacity">See All</Link>
             </div>
             <div className="space-y-4">
               {loading ? (
@@ -347,7 +345,7 @@ export default function Dashboard() {
                 ))
               ) : (
                 <div className="text-center py-20 bg-secondary/10 rounded-[2.5rem] border-2 border-dashed border-border/50">
-                  <p className="text-muted-foreground font-bold italic tracking-tight">No active cognitive nodes</p>
+                  <p className="text-muted-foreground font-bold italic tracking-tight">No courses started yet</p>
                 </div>
               )}
             </div>
@@ -358,7 +356,7 @@ export default function Dashboard() {
         <motion.div variants={itemVariants}>
           <Card className="p-10 apple-card relative overflow-hidden">
             <div className="flex items-center justify-between mb-10">
-              <h3 className="text-2xl font-bold tracking-tight">Neural Network</h3>
+              <h3 className="text-2xl font-bold tracking-tight">Skill Levels</h3>
               <TrendingUp className="w-6 h-6 text-primary" />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -377,14 +375,14 @@ export default function Dashboard() {
               ) : (
                 <div className="col-span-2 py-20 flex flex-col items-center justify-center text-center opacity-30">
                   <TrendingUp className="w-12 h-12 mb-4" />
-                  <p className="font-bold text-lg">Network isolated</p>
+                  <p className="font-bold text-lg">No skills added yet</p>
                 </div>
               )}
             </div>
             {topSkills.length > 0 && (
               <div className="mt-10 pt-8 border-t border-border/40 flex items-center justify-between">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Neural Synchronization Level: Optimal</p>
-                <Link href="/skills" className="text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:opacity-70">Expand Network</Link>
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Overall Skill Progress: Great</p>
+                <Link href="/skills" className="text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:opacity-70">Expand Skills</Link>
               </div>
             )}
           </Card>
