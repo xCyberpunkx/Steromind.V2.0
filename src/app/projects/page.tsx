@@ -16,7 +16,8 @@ import {
   Image as ImageIcon,
   Trash2,
   Layers,
-  ChevronRight
+  ChevronRight,
+  Pencil
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -58,6 +59,7 @@ export default function ProjectsPage() {
   const [search, setSearch] = useState("")
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
   const [isAddingProject, setIsAddingProject] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [tagInput, setTagInput] = useState("")
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -137,37 +139,85 @@ export default function ProjectsPage() {
     }
   }
 
-  const handleAddProject = async (data: ProjectFormValues) => {
+  const resetForm = () => {
+    reset({
+      title: '',
+      description: '',
+      url: '',
+      repo_url: '',
+      tags: [],
+      image_url: ''
+    })
+    setEditingProject(null)
+    setIsAddingProject(false)
+  }
+
+  const handleSaveProject = async (data: ProjectFormValues) => {
     try {
       const { data: userData } = await supabase.auth.getUser()
-      const { data: insertedData, error } = await supabase
-        .from('projects')
-        .insert([{
-          title: data.title,
-          description: data.description,
-          url: data.url,
-          repo_url: data.repo_url,
-          tags: data.tags,
-          image_url: data.image_url,
-          user_id: userData.user?.id || '00000000-0000-0000-0000-000000000000'
-        }])
-        .select()
-        .single()
+      const userId = userData.user?.id || '00000000-0000-0000-0000-000000000000'
 
-      if (error) throw error
+      if (editingProject) {
+        // Update
+        const { error } = await supabase
+          .from('projects')
+          .update({
+            title: data.title,
+            description: data.description,
+            url: data.url,
+            repo_url: data.repo_url,
+            tags: data.tags,
+            image_url: data.image_url
+          })
+          .eq('id', editingProject.id)
 
-      if (userData.user) {
-        await logActivity(userData.user.id)
+        if (error) throw error
+
+        setProjects(projects.map(p => p.id === editingProject.id ? { ...p, ...data } : p))
+        toast.success('Project updated successfully')
+      } else {
+        // Create
+        const { data: insertedData, error } = await supabase
+          .from('projects')
+          .insert([{
+            title: data.title,
+            description: data.description,
+            url: data.url,
+            repo_url: data.repo_url,
+            tags: data.tags,
+            image_url: data.image_url,
+            user_id: userId
+          }])
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (userData.user) {
+          await logActivity(userData.user.id)
+        }
+        setProjects([insertedData, ...projects])
+        toast.success('Project added successfully')
       }
 
-      setProjects([insertedData, ...projects])
-      reset()
-      setIsAddingProject(false)
-      toast.success('Project added successfully')
+      resetForm()
     } catch (error) {
-      console.error('Error adding project:', error)
-      toast.error('Failed to add project')
+      console.error('Error saving project:', error)
+      toast.error('Failed to save project')
     }
+  }
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject(project)
+    reset({
+      title: project.title,
+      description: project.description || '',
+      url: project.url || '',
+      repo_url: project.repo_url || '',
+      tags: project.tags || [],
+      image_url: project.image_url || ''
+    })
+    setIsAddingProject(true)
   }
 
   const handleSaveNotes = async (projectId: string, notes: string, summary: string, tags: string[], image_url?: string) => {
@@ -263,7 +313,10 @@ export default function ProjectsPage() {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Project Gallery</h2>
           <p className="text-gray-500 font-medium">Your portfolio of engineering excellence.</p>
         </div>
-        <Dialog open={isAddingProject} onOpenChange={setIsAddingProject}>
+        <Dialog open={isAddingProject} onOpenChange={(open) => {
+          if (!open) resetForm()
+          setIsAddingProject(open)
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white">
               <Plus className="w-4 h-4 mr-2" />
@@ -272,12 +325,12 @@ export default function ProjectsPage() {
           </DialogTrigger>
           <DialogContent className="max-w-lg p-6 bg-white">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Add Project</DialogTitle>
+              <DialogTitle className="text-xl font-bold">{editingProject ? 'Edit Project' : 'Add Project'}</DialogTitle>
               <DialogDescription className="text-gray-500">
                 Document your creation with precision.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit(handleAddProject)} className="space-y-6 py-4">
+            <form onSubmit={handleSubmit(handleSaveProject)} className="space-y-6 py-4">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">Project Title</label>
@@ -387,9 +440,9 @@ export default function ProjectsPage() {
                 </div>
               </div>
               <DialogFooter className="gap-2">
-                <Button type="button" variant="ghost" onClick={() => setIsAddingProject(false)}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
                 <Button type="submit" disabled={uploading} className="bg-amber-600 hover:bg-amber-700 text-white">
-                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Publish Project"}
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingProject ? "Update Project" : "Publish Project")}
                 </Button>
               </DialogFooter>
             </form>
@@ -525,6 +578,14 @@ export default function ProjectsPage() {
                             />
                           </DialogContent>
                         </Dialog>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                          onClick={() => handleEditProject(project)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

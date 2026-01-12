@@ -13,7 +13,8 @@ import {
   Code2,
   Trophy,
   ExternalLink,
-  Tag
+  Tag,
+  Pencil
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -55,6 +56,7 @@ export default function BacklogPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [isAddingItem, setIsAddingItem] = useState(false)
+  const [editingItem, setEditingItem] = useState<BacklogItem | null>(null)
   const [newItem, setNewItem] = useState({
     title: '',
     category: 'course',
@@ -86,7 +88,13 @@ export default function BacklogPage() {
     }
   }
 
-  const handleAddItem = async () => {
+  const resetForm = () => {
+    setNewItem({ title: '', category: 'course', priority: 'medium', url: '', description: '' })
+    setEditingItem(null)
+    setIsAddingItem(false)
+  }
+
+  const handleSaveItem = async () => {
     if (!newItem.title) {
       toast.error('Please provide a title')
       return
@@ -94,28 +102,50 @@ export default function BacklogPage() {
 
     try {
       const { data: userData } = await supabase.auth.getUser()
-      const { data, error } = await supabase
-        .from('backlog')
-        .insert([{
-          ...newItem,
-          user_id: userData.user?.id || '00000000-0000-0000-0000-000000000000'
-        }])
-        .select()
-        .single()
+      const userId = userData.user?.id || '00000000-0000-0000-0000-000000000000'
 
-      if (error) throw error
+      if (editingItem) {
+        // Update
+        const { error } = await supabase
+          .from('backlog')
+          .update({
+            title: newItem.title,
+            category: newItem.category,
+            priority: newItem.priority,
+            url: newItem.url || null,
+            description: newItem.description || null
+          })
+          .eq('id', editingItem.id)
 
-      if (userData.user) {
-        await logActivity(userData.user.id)
+        if (error) throw error
+
+        setItems(items.map(i => i.id === editingItem.id ? { ...i, ...newItem } : i))
+        toast.success('Item updated')
+      } else {
+        // Create
+        const { data, error } = await supabase
+          .from('backlog')
+          .insert([{
+            ...newItem,
+            user_id: userId,
+            status: 'pending'
+          }])
+          .select()
+          .single()
+
+        if (error) throw error
+
+        if (userData.user) {
+          await logActivity(userData.user.id)
+        }
+        setItems([data, ...items])
+        toast.success('Added to backlog')
       }
 
-      setItems([data, ...items])
-      setNewItem({ title: '', category: 'course', priority: 'medium', url: '', description: '' })
-      setIsAddingItem(false)
-      toast.success('Added to backlog')
+      resetForm()
     } catch (error) {
-      console.error('Error adding to backlog:', error)
-      toast.error('Failed to add item')
+      console.error('Error saving item:', error)
+      toast.error('Failed to save item')
     }
   }
 
@@ -133,6 +163,18 @@ export default function BacklogPage() {
       console.error('Error deleting item:', error)
       toast.error('Failed to remove item')
     }
+  }
+
+  const handleEdit = (item: BacklogItem) => {
+    setEditingItem(item)
+    setNewItem({
+      title: item.title,
+      category: item.category,
+      priority: item.priority,
+      url: item.url || '',
+      description: item.description || ''
+    })
+    setIsAddingItem(true)
   }
 
   const handleStartItem = async (item: BacklogItem) => {
@@ -214,7 +256,10 @@ export default function BacklogPage() {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Wishlist & Backlog</h2>
           <p className="text-gray-500">Plan your future learning and projects.</p>
         </div>
-        <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
+        <Dialog open={isAddingItem} onOpenChange={(open) => {
+          if (!open) resetForm()
+          setIsAddingItem(open)
+        }}>
           <DialogTrigger asChild>
             <Button className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
               <Plus className="w-4 h-4 mr-2" />
@@ -223,7 +268,7 @@ export default function BacklogPage() {
           </DialogTrigger>
           <DialogContent className="bg-white border-gray-200 text-gray-900">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold">Add to Wishlist</DialogTitle>
+              <DialogTitle className="text-xl font-bold">{editingItem ? 'Edit Item' : 'Add to Wishlist'}</DialogTitle>
               <DialogDescription className="text-gray-500">
                 What do you want to learn or build next?
               </DialogDescription>
@@ -293,8 +338,10 @@ export default function BacklogPage() {
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button variant="ghost" onClick={() => setIsAddingItem(false)}>Cancel</Button>
-              <Button onClick={handleAddItem} className="bg-amber-600 hover:bg-amber-700 text-white">Add Item</Button>
+              <Button variant="ghost" onClick={resetForm}>Cancel</Button>
+              <Button onClick={handleSaveItem} className="bg-amber-600 hover:bg-amber-700 text-white">
+                {editingItem ? 'Update Item' : 'Add Item'}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -372,14 +419,24 @@ export default function BacklogPage() {
                     </Button>
                   )}
                 </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 px-2 text-gray-400 hover:text-red-600 hover:bg-red-50"
-                  onClick={() => handleDeleteItem(item.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-amber-600 hover:bg-amber-50"
+                    onClick={() => handleEdit(item)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                    onClick={() => handleDeleteItem(item.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Award, ExternalLink, Calendar, Search, Download, Loader2, FileUp, X } from "lucide-react"
+import { Plus, Award, ExternalLink, Calendar, Search, Download, Loader2, FileUp, X, Trash2 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -102,6 +102,38 @@ export default function CertificatesPage() {
       toast.error(error.message || "Failed to upload certificate")
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleDeleteCertificate = async (certificate: Certificate) => {
+    if (!confirm('Are you sure you want to delete this certificate?')) return
+
+    try {
+      // 1. Delete from storage if URL exists
+      if (certificate.url) {
+        const urlObj = new URL(certificate.url)
+        // Extract path: usually after /public/certificates/
+        // Example: .../public/certificates/user_id/filename.ext
+        const pathParts = urlObj.pathname.split('/certificates/')
+        if (pathParts.length > 1) {
+          const storagePath = pathParts[1]
+          await supabase.storage.from('certificates').remove([storagePath])
+        }
+      }
+
+      // 2. Delete from database
+      const { error } = await supabase
+        .from('certificates')
+        .delete()
+        .eq('id', certificate.id)
+
+      if (error) throw error
+
+      setCertificates(certificates.filter(c => c.id !== certificate.id))
+      toast.success('Certificate deleted')
+    } catch (error) {
+      console.error('Error deleting certificate:', error)
+      toast.error('Failed to delete certificate')
     }
   }
 
@@ -275,6 +307,9 @@ export default function CertificatesPage() {
                       {cert.issue_date ? new Date(cert.issue_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50" onClick={() => handleDeleteCertificate(cert)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-amber-600 hover:bg-amber-50" asChild>
                         <a href={cert.url || '#'} target="_blank" rel="noopener noreferrer" download>
                           <Download className="w-4 h-4" />
